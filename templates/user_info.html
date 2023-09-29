@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Info: {{ user['first_name'] }} {{ user['last_name'] }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .rounded-btn {
+            border-radius: 24px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('companies') }}">CompanyApp</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('company_info', cid=user['cid']) }}">Company Info</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('location_info', cid=user['cid'], lid=user['lid']) }}">Location Info</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <div class="row">
+            <!-- User Info -->
+            <div class="col-lg-6 text-center">
+                <h1>{{ user['first_name'] }} {{ user['last_name'] }}</h1>
+                <a href="{{ url_for('location_support', cid=user['cid'], lid=user['lid']) }}" class="btn btn-primary rounded-btn mb-4">Support</a>
+                <h2>Basic Information</h2>
+                <ul class="list-group mb-4">
+                    <li class="list-group-item"><strong>Role:</strong> {{ user['role'] }}</li>
+                    <li class="list-group-item"><strong>Phone:</strong> {{ user['phone'] }}</li>
+                    <li class="list-group-item"><strong>Email:</strong> {{ user['email'] }}</li>
+                </ul>
+                <strong>UID:</strong> {{ user['uid'] }}
+                <form action="{{ url_for('remove_user', uid=user['uid']) }}" method="post">
+                    <input type="submit" value="Remove User" class="btn btn-danger mt-2 rounded-btn">
+                </form>
+            </div>
+
+            <!-- Requests Info -->
+            <div class="col-lg-6 text-center">
+                <h2>Requests</h2>
+                {% if requests %}
+                    <ul class="list-group mb-4">
+                        {% for request in requests %}
+                            <li class="list-group-item">
+                                <strong>Description:</strong> {{ request['description'] }}
+                                <br>
+                                <strong>Request ID:</strong> <a href="{{ url_for('view_request', cid=request['cid'], lid=request['lid'], rid=request['rid'], uid=request['uid']) }}">{{ request['rid'] }}</a>
+                                <br>
+                                <form action="{{ url_for('remove_request', rid=request['rid']) }}" method="post">
+                                    <input type="submit" value="Remove Request" class="btn btn-danger rounded-btn mt-2">
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No requests found for this user.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

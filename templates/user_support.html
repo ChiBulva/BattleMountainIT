@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IT Support Request</title>
+</head>
+<body>
+    <h1>Submit an IT Support Request</h1>
+    <form method="post">
+        <label for="user">Select User:</label>
+        <select name="user" id="user">
+            <option value="">select</option>
+            {% for user in users_list %}
+                <option value="{{ user['uid'] }}">{{ user['name'] }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <br>
+
+        <!-- Request Type -->
+        <label for="type">Request Type:</label>
+        <select id="type" name="type">
+            <option value="hardware">Hardware</option>
+            <option value="software">Software</option>
+            <option value="network">Network</option>
+            <option value="security">Security</option>
+        </select>
+        <br>
+        <br>
+
+        <!-- Priority Level -->
+        <label for="priority">Priority:</label>
+        <select id="priority" name="priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+        </select>
+        <br>
+        <br>
+
+        <!-- Subject -->
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject">
+        <br>
+        <br>
+
+        <!-- Description -->
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea>
+        <br>
+        <br>
+
+        <!-- Attachments -->
+        <label for="attachments">Attachments:</label>
+        <input type="file" id="attachments" name="attachments">
+        <br>
+        <br>
+
+        <input type="submit" value="Submit Request">
+    </form>
+</body>
+</html>

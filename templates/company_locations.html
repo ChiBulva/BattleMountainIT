@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Locations of {{ company['name'] }}</title>
+</head>
+<body>
+    <h1><a href="{{ url_for('company_info', cid=company['cid']) }}">{{ company['name'] }}</a></h1>
+    <ul>
+        {% for location in locations %}
+            <li>
+                <!-- Link to Location Info -->
+                <a href="{{ url_for('location_info', cid=location['cid'], lid=location['lid']) }}">
+                    {{ location['name'] }}
+                </a>
+                
+                <!-- Quick Info -->
+                <ul>
+                    <li>City: {{ location['city'] }}</li>
+                    <li>Zip: {{ location['zip'] }}</li>
+                    <li>Address: {{ location['address'] }}</li>
+                </ul>
+
+                <!-- Link to Google Maps -->
+                <a href="https://www.google.com/maps?q={{ location['address'] }},+{{ location['city'] }},+{{ location['zip'] }}" target="_blank">View on Google Maps</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('company_info', cid=company['cid']) }}">Back to Company Info</a></p>
+    <p><a href="{{ url_for('companies') }}">Back to Companies List</a></p>
+</body>
+</html>

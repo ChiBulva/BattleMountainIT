@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Company</title>
+</head>
+<body>
+    <form action="{{ url_for('add_company') }}" method="post">
+        <label for="company_name">Company Name:</label>
+        <input type="text" id="company_name" name="company_name" required>
+        <br>
+        <label for="login_name">Company Portal Login:</label>
+        <input type="text" id="login_name" name="login_name" required>
+        <br>
+        <input type="submit" value="Add Company">
+    </form>
+    
+    <p><a href="{{ url_for('companies') }}">Back to Companies List</a></p>
+</body>
+</html>

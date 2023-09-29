@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Landing Page</title>
+</head>
+<body>
+    <h1>Available Routes</h1>
+    <ul>    
+        <ul>
+            <a href="{{ url_for('add_company') }}">Add a New Company</a>
+        </ul>
+    </ul>
+    <h2>Available Collections</h2>
+    <ul>
+        {% for collection in routes_info["available_collections"] %}
+            <li><a href="{{ url_for('show_collection', collection_name=collection) }}">{{ collection }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

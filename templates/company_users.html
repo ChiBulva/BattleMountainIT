@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ company['name'] }}</title>
+</head>
+<body>
+    <h1>Users of: <a href="{{ url_for('company_info', cid=company['cid']) }}">{{ company['name'] }}</a></h1>
+    <ul>
+        {% for user in users %}
+            <!-- in your company or location template where you list the users -->
+            <li><a href="{{ url_for('user_info', cid=user['cid'], lid=user['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }} (Role: {{ user['role'] }})</a></li>
+
+        {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('company_info', cid=company['cid']) }}">Back to Company Info</a></p>
+    <p><a href="{{ url_for('companies') }}">Back to Companies List</a></p>
+</body>
+</html>

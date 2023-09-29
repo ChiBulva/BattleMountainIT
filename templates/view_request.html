@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Support Request</title>
+</head>
+<body>
+
+    <h1>Support Request for <a href="{{ url_for('company_info', cid=company['cid']) }}">{{ company['name'] }}</a></a></h1>
+    <h2>Location: <a href="{{ url_for('location_info', cid=company['cid'], lid=location['lid']) }}">{{ location['name'] }}</a></h2>
+    {% if user %}
+        <h2>User: <a href="{{ url_for('user_info', cid=company['cid'], lid=location['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }}</a></h2>
+        <h3>Role: {{ user['role'] }}</h3>
+    {% endif %}
+<h3>Request Details</h3>
+<ul>
+    <li><strong>Request Type:</strong> {{ support_request['type'] }}</li>
+    <li><strong>Priority:</strong> {{ support_request['priority'] }}</li>
+    <li><strong>Description:</strong> {{ support_request['description'] }}</li>
+    <!-- Add other fields as needed like timestamp, status, etc. -->
+</ul>
+
+<p><a href="{{ url_for('location_support', cid=company['cid'], lid=location['lid']) }}">Back to Support Page</a></p>
+<p><a href="{{ url_for('company_info', cid=company['cid']) }}">Back to Company Info</a></p>
+<p><a href="{{ url_for('index') }}">Home</a></p>
+<div><strong>Request ID:</strong> {{ support_request['rid'] }}</div>
+<form action="{{ url_for('remove_request', rid=support_request['rid']) }}" method="post">
+    <input type="submit" value="Remove Request">
+</form>
+</body>
+</html>

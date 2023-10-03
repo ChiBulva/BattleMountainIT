@@ -1,3 +1,11 @@
+Live:
+	mv extras/live-docker-compose.yml docker-compose.yml
+	mv extras/Dockerfile Dockerfile
+Dev:
+	mv extras/devops-docker-compose.yml docker-compose.yml
+	mv extras/Dockerfile Dockerfile
+
+
 Docker Compose Application Setup
 1. Prerequisites
    Before running this application, ensure that you have the following software installed on your system:

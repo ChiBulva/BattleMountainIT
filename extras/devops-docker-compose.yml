@@ -1,0 +1,14 @@
+version: '3'
+services:
+  web-devops:
+    build:
+      context: ./DevOps/BattleMountainIT  # Specify the context to your DevOps code
+    ports:
+      - "5030:5000"  # Use a different port for DevOps
+  db-devops:
+    image: "mongo:latest"
+    volumes:
+      - /data/mongodb-devops:/data/db  # Use a different volume for DevOps
+    ports:
+      - "27018:27017"  # Use a different port for DevOps MongoDB
+

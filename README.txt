@@ -1,9 +1,9 @@
 Live:
 	mv extras/live-docker-compose.yml docker-compose.yml
-	mv extras/Dockerfile Dockerfile
+	mv extras/Dockerfile GlobalDockerfile
 Dev:
 	mv extras/devops-docker-compose.yml docker-compose.yml
-	mv extras/Dockerfile Dockerfile
+	mv extras/Dockerfile GlobalDockerfile
 
 
 Docker Compose Application Setup

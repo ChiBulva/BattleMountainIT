@@ -6,17 +6,13 @@ app = Flask(__name__)
 
 business = "Battle Mountain I.T."
 try:
-    client = MongoClient('localhost', 27017)  # When on a local machine
-    print("Connected to MongoDB at localhost.")
-except Exception as e_local:
-    print("An error occurred while connecting locally:", e_local)
-    
-    try:
-        client = MongoClient('db', 27017)  # When on a Docker instance
-        print("Connected to MongoDB at Docker instance.")
-    except Exception as e_docker:
-        print("An error occurred while connecting in Docker:", e_docker)
-        exit(1)  # Exiting because couldn't connect either way
+    #client = MongoClient('127.0.0.1', 27017)
+    client = MongoClient('db', 27017)
+    #client = MongoClient('db', 27018)
+
+    #client = MongoClient('db', 27018)
+except Exception as e:
+    print("An error occurred:", e)
 
 # MongoDB setup
 db = client['BattleMountainIT']

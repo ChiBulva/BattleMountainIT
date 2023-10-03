@@ -10,6 +10,8 @@ try:
     #client = MongoClient('127.0.0.1', 27017)
     client = MongoClient('db', 27017)
 
+    #client = MongoClient('db', 27018)
+
     db = client['BattleMountainIT']
 except Exception as e:
     print("An error occurred:", e)

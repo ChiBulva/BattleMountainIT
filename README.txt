@@ -6,6 +6,8 @@ Dev:
 	cp extras/GlobalDockerfile Dockerfile
 
 
+	Change line in App for Dev server
+
 Docker Compose Application Setup
 1. Prerequisites
    Before running this application, ensure that you have the following software installed on your system:

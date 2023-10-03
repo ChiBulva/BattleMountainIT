@@ -7,7 +7,9 @@ app = Flask(__name__)
 business = "Battle Mountain I.T."
 try:
     #client = MongoClient('127.0.0.1', 27017)
+    #client = MongoClient('localhost', 27017) 
     client = MongoClient('db', 27017)
+
     #client = MongoClient('db', 27018)
 
     #client = MongoClient('db', 27018)

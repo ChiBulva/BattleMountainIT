@@ -1,0 +1,11 @@
+# Docker Compose files
+docker-compose-live.yml
+docker-compose-devops.yml
+
+# Docker environment files (if you use .env files)
+.env
+.env.devops
+
+# Docker-related files
+Dockerfile
+

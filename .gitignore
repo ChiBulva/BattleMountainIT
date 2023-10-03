@@ -1,11 +1,33 @@
-# Docker Compose files
-docker-compose.yml
+# .gitignore
 
-# Docker-related files
-Dockerfile
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 
-# Docker environment files (if you use .env files)
+# Environment variables
 .env
-.env.devops
 
+# Flask file to keep environment variables
+.flaskenv
+
+# Pytest cache
+.cache
+.pytest_cache/
+
+# Virtual environments
+venv/
+
+# IDE folders
+.idea/
+.vscode/
+
+# Database files (if SQLite for example)
+*.db
+*.db-journal
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
 

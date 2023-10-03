@@ -1,10 +1,25 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for
 from pymongo import MongoClient
 import uuid  # for generating OAuth2.0 code
+import os
 
 app = Flask(__name__)
 
+# Read an environment variable to decide which MongoDB port to use
+is_dev = os.environ.get('IS_DEV', 'False').lower() == 'true'
+
+print(is_dev)
+
+if is_dev:
+    client = MongoClient('db', 27018)
+else:
+    client = MongoClient('db', 27017)
+
+
+
+
 business = "Battle Mountain I.T."
+"""
 try:
     #client = MongoClient('127.0.0.1', 27017)
     #client = MongoClient('localhost', 27017) 
@@ -15,9 +30,14 @@ try:
     #client = MongoClient('db', 27018)
 except Exception as e:
     print("An error occurred:", e)
-
+"""
 # MongoDB setup
 db = client['BattleMountainIT']
+
+
+print(f"Client: {client}")
+print(f"Database: {db}")
+
 
 collections = ['companies', 'locations', 'users', 'requests', 'quotes']
 

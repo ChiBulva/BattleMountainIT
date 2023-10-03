@@ -2,15 +2,45 @@
 <html>
 <head>
     <title>Supported Companies: {{ business }}</title>
+    <!-- Bootstrap 4 CDN -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            padding: 20px;
+        }
+        .company-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .company-list-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .add-company-btn {
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Supported Companies: {{ business }}</h1> 
-    <a href="{{ url_for('add_company') }}">Add a New Company</a>
-    <ul>
-        {% for company in companies %}
-            <li><a href="{{ url_for('company_info', cid=company['cid']) }}">{{ company['name'] }}</a></li>
-        {% endfor %}
-    </ul>
-    
+    <div class="container">
+        <h1 class="text-center">Supported Companies: {{ business }}</h1>
+        <a href="{{ url_for('add_company') }}" class="btn btn-primary add-company-btn">Add a New Company</a>
+        <ul class="company-list">
+            {% for company in companies %}
+                <li class="company-list-item">
+                    <a href="{{ url_for('company_info', cid=company['cid']) }}" class="text-decoration-none">{{ company['name'] }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Bootstrap 4 JS (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+

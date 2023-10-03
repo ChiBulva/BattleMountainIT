@@ -8,5 +8,5 @@ services:
   db-devops:
     image: "mongo:latest"
     ports:
-      - "27018:27017"  # Use a different port for DevOps MongoDB
+      - "27017:27017"  # Use a different port for DevOps MongoDB
 

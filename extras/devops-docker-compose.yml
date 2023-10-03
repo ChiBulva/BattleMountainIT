@@ -1,8 +1,7 @@
 version: '3'
 services:
   web-devops:
-    build:
-      context: ./DevOps/BattleMountainIT  # Specify the context to your DevOps code
+    build: .
     ports:
       - "5030:5000"  # Use a different port for DevOps
   db-devops:

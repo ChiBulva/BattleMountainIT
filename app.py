@@ -7,16 +7,18 @@ app = Flask(__name__)
 business = "Battle Mountain I.T."
 
 try:
-    #client = MongoClient('127.0.0.1', 27017)
-    client = MongoClient('db', 27017)
+    client = MongoClient('localhost', 27017) # When on a local machine
+except:
+    try:
+        #client = MongoClient('127.0.0.1', 27017)
+        client = MongoClient('db', 27017) # When on a Docker instance
+        #client = MongoClient('db', 27018)
 
-    #client = MongoClient('db', 27018)
-
-    db = client['BattleMountainIT']
-except Exception as e:
-    print("An error occurred:", e)
+    except Exception as e:
+        print("An error occurred:", e)
 
 # MongoDB setup
+db = client['BattleMountainIT']
 
 collections = ['companies', 'locations', 'users', 'requests', 'quotes']
 

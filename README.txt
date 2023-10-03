@@ -1,9 +1,9 @@
 Live:
 	cp extras/live-docker-compose.yml docker-compose.yml
-	cp extras/Dockerfile GlobalDockerfile
+	cp extras/GlobalDockerfile Dockerfile
 Dev:
 	cp extras/devops-docker-compose.yml docker-compose.yml
-	cp extras/Dockerfile GlobalDockerfile
+	cp extras/GlobalDockerfile Dockerfile
 
 
 Docker Compose Application Setup

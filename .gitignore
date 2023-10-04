@@ -31,3 +31,8 @@ venv/
 # Temporary files
 *.tmp
 
+# Docker artifacts
+*.dockerignore
+docker-compose.yml
+docker-compose.override.yml
+

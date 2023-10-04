@@ -1,15 +1,40 @@
 version: '3'
 services:
-  web:
+  live_web_container:
+    build: .
     environment:
       - IS_DEV=False
-    build: .
+
     ports:
       - "80:5000"
-  db:
-    image: "mongo:latest"
-    volumes:
-      - /data/mongodb:/data/db
+    networks:
+      - live-network
+    depends_on:
+      - live_db_container
+
+  live_db_container:
+    image: mongo:latest
     ports:
       - "27017:27017"
+    networks:
+      - live-network
+
+networks:
+  live-network:
+    driver: bridge
+
+#version: '3'
+#services:
+#  web:
+#    environment:
+#      - IS_DEV=False
+#    build: .
+#    ports:
+#      - "80:5000"
+#  db:
+#    image: "mongo:latest"
+#    volumes:
+#      - /data/mongodb:/data/db
+#    ports:
+#      - "27017:27017"
 

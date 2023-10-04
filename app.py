@@ -11,9 +11,9 @@ is_dev = os.environ.get('IS_DEV', 'False').lower() == 'true'
 print(is_dev)
 
 if is_dev:
-    client = MongoClient('db', 27018)
+    client = MongoClient('dev_db_container', 27018)
 else:
-    client = MongoClient('db', 27017)
+    client = MongoClient('live_db_container', 27017)
 
 
 

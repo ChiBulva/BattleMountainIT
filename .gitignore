@@ -35,4 +35,5 @@ venv/
 *.dockerignore
 docker-compose.yml
 docker-compose.override.yml
-
+live-docker-compose.yml
+devops-docker-compose.yml

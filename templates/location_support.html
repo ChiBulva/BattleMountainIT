@@ -15,21 +15,33 @@
                 <div class="logo-text">Battle Mountain</div>
                 <div class="logo-text">Support</div>
                 <img class="logo" src="{{ url_for('static', filename='Logo.gif') }}" alt="Your GIF">
+                <div class="logo-text">Company: {{company_name}}</div>
+                <div class="logo-text">Location: {{location_name}}</div>
             </div>
 
+                
+            </br>
+        
             <!-- Contact Information -->
             <div class="section">
-                <h2>Contact Information</h2>
+                <div class="lab-text">Contact Information</div>
+                </br>
                 <label for="first_name">First Name:</label>
                 <input type="text" name="first_name" id="first_name" required><br>
                 <label for="last_name">Last Name:</label>
                 <input type="text" name="last_name" id="last_name" required><br>
+                <label for="phone">Phone Number:</label>
+                <input type="text" name="phone" id="phone" required><br>
+                <label for="email">Eamil:</label>
+                <input type="text" name="email" id="email" required><br>
             </div>
             
             <!-- Request Information -->
+            <div class="lab-text">Request Information</div>
             <div class="section">
-                <h2>Request Information</h2>
-                <label for="type">Request Type:</label>
+                
+                </br>
+                <label   for="type">Request Type:</label>
                 <select id="type" name="type" required>
                     <option value="hardware">Hardware</option>
                     <option value="software">Software</option>
@@ -50,12 +62,21 @@
             </div>
             <!-- OTP -->
             <div class="section">
-                <h2>OTP Verification</h2>
+                <div class="lab-text">OTP Verification</div>
+                
+                </br>
+                
                 <label for="auth">Enter OTP:</label>
                 <input type="text" name="auth" id="auth" required><br>
             </div>
   
             <input type="submit" value="Submit Request">
+        </br>
+        </br>
+        </br>
+        </br>
+        </br>
+        </br>
         </form>
     </div>
   </div>

@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bmit-styles-lid_info.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bmit-styles.css') }}">
 
     <title>Location Info: Back to Company Info</title>
     
@@ -18,41 +18,48 @@
             <div class="logo-text">Battle Mountain</div>
             <div class="logo-text">Support</div>
             <img class="logo" src="{{ url_for('static', filename='Logo.gif') }}" alt="Your GIF">
+            <div class="logo-text">
+              <a href="{{ url_for('company_info', cid=location['cid']) }}" class="button-link"> {{ company_name }}</a>  
+            </div>
+            
+            <div class="lab-text"> Location: {{ location['name'] }}</div>
         </div>
-        <h1><a href="{{ url_for('company_info', cid=location['cid']) }}">{{ company_name }}</a>: {{ location['name'] }}</h1>
-        <h2>Basic Information</h2>
-        <ul>
-            <li><strong>Address:</strong> {{ location['address'] }}</li>
-            <li><strong>City:</strong> {{ location['city'] }}</li>
-            <li><strong>ZIP:</strong> {{ location['zip'] }}</li>
-        </ul>
-        <a href="{{ url_for('location_support', cid=location['cid'], lid=location['lid']) }}" class="button">Support</a>
-        <a href="{{ url_for('show_qr', cid=location['cid'], lid=location['lid']) }}" class="button">QR</a>    
-        <!--<h2>Users at this Location</h2>
-        <ul>
-            {% for user in users %}
-                <li>
-                    <a href="{{ url_for('user_info', cid=location['cid'], lid=location['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }}</a>
-                    
-                    <form action="{{ url_for('remove_user', uid=user['uid']) }}" method="post" style="display:inline;">
-                        <input type="submit" value="Remove">
-                    </form>
-                </li>
-            {% endfor %} 
-        </ul>-->
-        <h2>Requests at this Location</h2>
-        <ul>
-            {% for request in requests %}
-                <li><a href="{{ url_for('view_request', cid=request['cid'], lid=request['lid'], uid=request['uid'], rid=request['rid']) }}">{{ request['description'] }}</a></li>
-            {% endfor %}
-        </ul>
-        <p><a href="{{ url_for('company_info', cid=location['cid']) }}">Back to Company Info</a></p>
+        <div class="card">
+            <div class="card-body">
+              <h2>Basic Information</h2>
+              <ul>
+                <li><strong>Address:</strong> {{ location['address'] }}</li>
+                <li><strong>City:</strong> {{ location['city'] }}</li>
+                <li><strong>ZIP:</strong> {{ location['zip'] }}</li>
+              </ul>
+              <a href="{{ url_for('location_support', cid=location['cid'], lid=location['lid']) }}" class="button">Support</a>
+              <a href="{{ url_for('show_qr', cid=location['cid'], lid=location['lid']) }}" class="button">QR</a>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title">Requests at this Location</div>
+            <div class="card-body">
+              <ul>
+                {% for request in requests %}
+                  <a class="button-link" href="{{ url_for('view_request', cid=request['cid'], lid=request['lid'], uid=request['uid'], rid=request['rid']) }}">{{ request['first_name'] }}</a> {{ request['first_name'] }} {{ request['last_name'] }} - {{ request['description'] }}
+                  <br>
+                  <br>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
         
-        <li><strong>LID:</strong> {{ location['lid'] }}</li>
-        <form action="{{ url_for('remove_location', lid=location['lid']) }}" method="post">
-            <input type="submit" value="Remove Location">
-        </form>
-        
+          <div class="card">
+            <div class="card-body">
+              <li><strong>LID:</strong> {{ location['lid'] }}</li>
+              <form action="{{ url_for('remove_location', lid=location['lid']) }}" method="post">
+                <input type="submit" class="button" value="Remove Location">
+              </form>
+            </div>
+          </div>  
+          <p><a href="{{ url_for('company_info', cid=location['cid']) }}" class="button">Back to Company Info</a></p>
+          
     </div>
 </div>
 

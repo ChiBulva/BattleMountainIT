@@ -63,6 +63,22 @@ OTP2 = '5678'
 # Middleware: Login & More
 # ======================
 
+def get_from_mongo(collection_name, fields):
+    # Create an empty dictionary to hold the projection fields
+    projection_fields = {}
+    
+    # Fill the dictionary with the fields passed in the list
+    for field in fields:
+        projection_fields[field] = 1  # 1 means we want to include this field in the result
+
+    # Query the MongoDB collection and find one record
+    record = db[collection_name].find_one({}, projection_fields)
+    
+    if record:
+        return {field: record.get(field, None) for field in fields}
+    else:
+        return None  # No records found
+
 # Custom decorator to require OTP authentication
 def require_otp(f):
     @wraps(f)
@@ -304,7 +320,27 @@ def location_info(cid, lid):
 def get_auth_by_cid_and_lid(cid, lid):
     # Query the database to find the location by company ID and location ID
     return db['locations'].find_one({'cid': cid, 'lid': lid}).get('auth')
-    
+
+@app.route('/<string:cid>/<string:lid>/support/qr', methods=['GET'])
+def support_qr(cid, lid):
+    location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
+    company = db['companies'].find_one({ 'cid': cid })
+    if not location_record or not company:
+        abort(404, description="Invalid ID for this company.")
+    location_name = location_record.get('name')
+
+    company_name = company.get('name')
+    # Create a URL for the QR code to link to
+    qr_url = f'http://battlemountainit.myftp.biz/{cid}/{lid}/support'
+
+    # Generate the QR code
+    qr = qrcode.make(qr_url)
+    buf = BytesIO()
+    qr.save(buf, format="PNG")
+    img_str = base64.b64encode(buf.getvalue()).decode()
+
+    return render_template('show_qr.html', qr_image=img_str, company_name=str( company_name ) + ": " + str( location_name ), location_name="Support Portal - QR", auth="")
+
 @app.route('/<string:cid>/<string:lid>/qr', methods=['GET'])
 @require_otp
 def show_qr(cid, lid):
@@ -337,7 +373,15 @@ def show_qr(cid, lid):
     
     img_str = base64.b64encode(buf.getvalue()).decode()
     # Show QR Auth20 to user and ask them to verify
-    return render_template('show_qr.html', qr_image=img_str, auth=auth)
+
+    location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
+    company = db['companies'].find_one({ 'cid': cid })
+    if not location_record or not company:
+        abort(404, description="Invalid ID for this company.")
+    location_name = location_record.get('name')
+    company_name = company.get('name')
+
+    return render_template('show_qr.html', qr_image=img_str, auth=auth, location_name=location_name, company_name=company_name)
 
 
 @app.route('/<string:cid>/<string:lid>/support', methods=['GET', 'POST'])
@@ -353,6 +397,8 @@ def location_support(cid, lid):
         # Collect form data
         first_name = request.form['first_name']
         last_name = request.form['last_name']
+        phone = request.form['phone']
+        email = request.form['email']
         description = request.form['description']
         type = request.form['type']
         priority = request.form['priority']
@@ -377,27 +423,33 @@ def location_support(cid, lid):
             'rid': rid,
             'cid': cid,
             'lid': lid,
+            'phone': phone,
+            'email': email,
             'first_name': first_name,
             'last_name': last_name,
             'description': description,
             'type': type,
-            'priority': priority
+            'priority': priority,
+            'comments': []
         }
         
         # Insert new support request into the database
         db['requests'].insert_one(new_request)
         
-        # Redirect to the new request view
-        return redirect(url_for('view_request', cid=cid, lid=lid, rid=rid))
+        # Redirect to the Success view
+        return render_template('successful_request.html')
     
         #except Exception as e:
         print(f"An error occurred: {e}")
 
     else:  # GET request
         location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
-        if not location_record:
-            abort(404, description="Invalid location ID for this company.")
-        return render_template('location_support.html', cid=cid, lid=lid)
+        company = db['companies'].find_one({ 'cid': cid })
+        if not location_record or not company:
+            abort(404, description="Invalid ID for this company.")
+        location_name = location_record.get('name')
+        company_name = company.get('name')
+        return render_template( 'location_support.html', cid=cid, lid=lid, location_name=location_name, company_name=company_name )
 
 
 # Route to view details of a specific support request

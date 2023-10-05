@@ -1,0 +1,36 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bmit-styles.css') }}">
+    <title>Request Successfully Submitted</title>
+</head>
+<body>
+    <div id="form-container">
+        <div id="form3D">
+            <!-- GIF Container -->
+            <div class="gif-container">
+                <div class="logo-text">Battle Mountain</div>
+                <div class="logo-text">Support</div>
+                <img class="logo" src="{{ url_for('static', filename='Logo.gif') }}" alt="Your GIF">
+            </div>
+            <p>Your request for support has been successfully submitted.</p>
+            <p>Best, </p>
+            <p>Battle Mountain </p>
+            
+        </div>
+    </div>
+
+    <script>
+        // Enable 3D effect only on non-mobile devices
+        if (window.innerWidth > 768) {
+          let Rot = 1
+          document.addEventListener('mousemove', function(event) {
+            const x = (event.clientX / window.innerWidth - 0.5) * 2;
+            const y = (event.clientY / window.innerHeight - 0.5) * 2;
+            const form3D = document.getElementById('form3D');
+            form3D.style.transform = `rotateX(${y * -Rot}deg) rotateY(${x * Rot}deg)`;
+          });
+        }
+      </script>
+</body>
+</html>

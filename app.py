@@ -255,7 +255,7 @@ def remove_company(cid):
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # Route to display information about a specific company
-@app.route('/<string:cid>/', methods=['GET'])
+@app.route('/companies/<string:cid>/', methods=['GET'])
 def company_info(cid):
     # Query the database to find the company by ID
     company = db['companies'].find_one({'cid': cid})
@@ -434,7 +434,7 @@ def index():
     # Render the home page template and pass the routes_info dictionary
     return render_template('index.html', routes_info=routes_info)
 
-# Route to display all items in a specific MongoDB collection
+
 @app.route('/<string:collection_name>')
 @require_otp  # Apply OTP requirement
 def show_collection(collection_name):
@@ -446,12 +446,20 @@ def show_collection(collection_name):
     collection = db[collection_name]
     items = list(collection.find({}))
     
-    # Convert MongoDB ObjectId to string
+    # Convert MongoDB ObjectId to string and remove sensitive fields
     for item in items:
-        item['_id'] = str(item['_id'])
+        item['_id'] = str(item['_id'])  # Convert to string if you want to keep it, else comment this line
+        # Remove sensitive fields
+        sensitive_keys = ['auth', '_id']
+        for key in sensitive_keys:
+            try:
+                item.pop(key)
+            except KeyError:
+                continue  # Key does not exist, continue to next key
         
-    # Return items in JSON format
-    return jsonify(items)
+        
+    # Render items in HTML template
+    return render_template('show_collection.html', collection_name=collection_name, items=items)
 
 # Route to display all companies
 @app.route('/companies')

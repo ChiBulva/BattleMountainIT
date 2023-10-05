@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Show Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: left;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+    <body>
+        <h1>{{ collection_name }}</h1>
+        <table border="1">
+            <!-- Generate Table Headers Dynamically -->
+            {% if items %}
+            <tr>
+                {% for key in items[0].keys() %}
+                    {% if key not in ['_id', 'auth'] %}
+                        <th>{{ key }}</th>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endif %}
+        
+            <!-- Generate Table Data Dynamically -->
+            {% for item in items %}
+            <tr>
+                {% for key, value in item.items() %}
+                    {% if key not in ['_id', 'auth'] %}
+                        <td>
+                            {% if key == 'rid' and item.get('rid') %}
+                                <a href="/{{ item['cid'] }}/{{ item['lid'] }}/{{ item['rid'] }}">Request Card</a>
+                            {% elif key == 'lid' and item.get('lid') %}
+                                <a href="/{{ item['cid'] }}/{{ item['lid'] }}">Location Card</a>
+                            {% elif key == 'cid' and item.get('cid') %}
+                                <a href="/companies/{{ item['cid'] }}">Company Card</a>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+</html>

@@ -13,12 +13,14 @@
       background-color: black;
     }
     #form-container {
+        display: grid;
+    place-items: center;
+    height: 100vh;
+
       color:#225c25;
       perspective: 600px;
-      width: 90%;
-      height: 100%;
+      width: 90%;;
       margin: 100px auto;
-      display: flex;  /* Added */
       justify-content: center;  /* Added */
       align-items: center;  /* Added */
     }
@@ -33,10 +35,11 @@
     /* General Form Styles */
     form {
         font-family: 'Consolas', 'Courier New', Courier, monospace;
-    }
+    }       
 
     .section {
       margin-bottom: 20px;
+      
     }
 
     h2 {
@@ -54,7 +57,6 @@
     input[type="text"],
     select,
     textarea {
-      color:#225c25;
       box-shadow: 0px 0px 10px 2px #45a049;
       width: 90%;
       padding: 12px;
@@ -107,62 +109,53 @@
         width: 90%
       }
       #form3D {
+        width: 90%;
         transform: none !important; /* Override JS if needed */
       }
+      img {
+        width: 100%;
+      }
+    }
+
+    .qr{
+      box-shadow: 0px 0px 25px 10px #45a049;
+    }
+    .copy-button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 36px;
+        box-shadow: 0px 0px 10px 2px #45a049;
+    }
+
+    .copy-button:hover {
+        background-color: #45a049;
     }
   </style>
 </head>
 <body>
   <div id="form-container">
     <div id="form3D">
-        <form method="post">
-            <!-- GIF Container -->
-            <div class="gif-container">
-                <div class="logo-text">Battle Mountain</div>
-                <div class="logo-text">Support</div>
-                <img class="logo" src="{{ url_for('static', filename='Logo.gif') }}" alt="Your GIF">
-            </div>
+        
+        <!-- GIF Container -->
+        <div class="gif-container">
+            <div class="logo-text">Battle Mountain</div>
+            <div class="logo-text">Support</div>
+            <img class="logo" src="{{ url_for('static', filename='Logo.gif') }}" alt="Your GIF">
+        </div>
 
-            <!-- Contact Information -->
-            <div class="section">
-                <h2>Contact Information</h2>
-                <label for="first_name">First Name:</label>
-                <input type="text" name="first_name" id="first_name" required><br>
-                <label for="last_name">Last Name:</label>
-                <input type="text" name="last_name" id="last_name" required><br>
-            </div>
-            
-            <!-- Request Information -->
-            <div class="section">
-                <h2>Request Information</h2>
-                <label for="type">Request Type:</label>
-                <select id="type" name="type" required>
-                    <option value="hardware">Hardware</option>
-                    <option value="software">Software</option>
-                    <option value="network">Network</option>
-                    <option value="security">Security</option>
-                </select><br>
+        <h1>Scan this QR Code for Support</h1>
 
-                <label for="priority">Priority:</label>
-                <select id="priority" name="priority" required>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                </select><br>
+        <!-- Display QR Code -->
+        <img class="qr" src="data:image/png;base64,{{ qr_image }}" alt="QR Code for Support">
+    
+        <h2>Or use this OTP Secret: </h2><div id="otpSecret">{{ auth }}</div></p>
+        <button class="copy-button" id="copyButton">Copy OTP Secret</button>
 
-                <label for="description">Description:</label>
-                <textarea id="description" name="description" required></textarea><br>
-            </div>
-            <!-- OTP -->
-            <div class="section">
-                <h2>OTP Verification</h2>
-                <label for="auth">Enter OTP:</label>
-                <input type="text" name="auth" id="auth" required><br>
-            </div>
-  
-            <input type="submit" value="Submit Request">
-        </form>
+    
     </div>
   </div>
 
@@ -177,6 +170,42 @@
         form3D.style.transform = `rotateX(${y * -Rot}deg) rotateY(${x * Rot}deg)`;
       });
     }
+    document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("copyButton").addEventListener("click", function() {
+    // Function to copy OTP to clipboard here
+
+    // Changing styles temporarily to indicate copying
+    let otpElement = document.getElementById("otpSecret");
+    otpElement.style.backgroundColor = "#45a049";
+    otpElement.style.color = "black";
+    
+    setTimeout(function() {
+      otpElement.style.backgroundColor = "transparent";
+      otpElement.style.color = "inherit";
+    }, 250); // Resetting the styles after 1 second
+  });
+  document.getElementById("copyButton").addEventListener("click", function() {
+    // Get the text
+    const str = document.getElementById("otpSecret").textContent || document.getElementById("otpSecret").innerText;
+    
+    // Create a temporary text area element
+    const el = document.createElement('textarea');
+    el.value = str;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+
+    // Select and copy the text
+    el.select();
+    document.execCommand('copy');
+
+    // Remove the temporary element
+    document.body.removeChild(el);
+});
+
+});
+
   </script>
 </body>
 </html>

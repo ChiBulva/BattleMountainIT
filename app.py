@@ -1,225 +1,245 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for
-from pymongo import MongoClient
-import uuid  # for generating OAuth2.0 code
+# ========================
+# Imported External Modules
+# ========================
+
+from flask import Flask, jsonify, render_template, request, redirect, url_for, session
+from pymongo import MongoClient  # MongoDB Driver
+from datetime import timedelta  # For session timeout
+import uuid  # For generating OAuth2.0 code
 import os
+from functools import wraps  # For custom decorator
+import pyotp
+import qrcode
+from io import BytesIO
+import base64
+
+business = "Battle Mountain Support"
+
+
+# ======================
+# File Configuration
+# ======================
+
+buffered = BytesIO()
+
+# ======================
+# App Configuration
+# ======================
 
 app = Flask(__name__)
+app.permanent_session_lifetime = timedelta(minutes=30)  # 30-minute session timeout
+app.secret_key = 'your_secret_key_here'  # Secret key for Flask session
 
-# Read an environment variable to decide which MongoDB port to use
+# ======================
+# Environment Setup
+# ======================
+
+# Read environment variable to decide MongoDB port
 is_dev = os.environ.get('IS_DEV', 'False').lower() == 'true'
 
-print(is_dev)
-
+# Connect to the appropriate MongoDB container
 if is_dev:
     client = MongoClient('dev_db_container', 27017)
 else:
     client = MongoClient('live_db_container', 27017)
 
-
-
-
-business = "Battle Mountain I.T."
-"""
-try:
-    #client = MongoClient('127.0.0.1', 27017)
-    #client = MongoClient('localhost', 27017) 
-    client = MongoClient('db', 27017)
-
-    #client = MongoClient('db', 27018)
-
-    #client = MongoClient('db', 27018)
-except Exception as e:
-    print("An error occurred:", e)
-"""
-# MongoDB setup
+# MongoDB Setup
 db = client['BattleMountainIT']
+collections = ['companies', 'locations', 'requests', 'quotes']
 
-
-print(f"Client: {client}")
-print(f"Database: {db}")
-
-
-collections = ['companies', 'locations', 'users', 'requests', 'quotes']
-
+# Create collections if they don't exist
 for collection in collections:
     if collection not in db.list_collection_names():
         db.create_collection(collection)
 
-##############################################
+# ======================
+# Hardcoded OTPs
+# ======================
+
+OTP1 = '1234'
+OTP2 = '5678'
+
+# ======================
+# Middleware: Login & More
+# ======================
+
+# Custom decorator to require OTP authentication
+def require_otp(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Custom decorator to require OTP authentication for a support request
+def require_company_login(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('company_login'):
+            return redirect(url_for('company_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# ======================
+# Routes
+# ======================
+
+# Auth: Login Route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # Handle POST request
+    if request.method == 'POST':
+        otp1 = request.form.get('otp1')
+        otp2 = request.form.get('otp2')
+        
+        # Validate OTPs
+        if otp1 == OTP1 and otp2 == OTP2:
+            session['logged_in'] = True  # Set session variable
+            next_url = session.pop('next_url', url_for('companies'))  # Redirect destination
+            return redirect(next_url)
+        else:
+            return "Invalid OTPs. Please try again."
+    
+    # Handle GET request and render login page
+    return render_template('login.html')
+
+# Auth: Login Route
+@app.route('/company_login', methods=['GET', 'POST'])
+def company_login():
+    # Handle POST request
+    if request.method == 'POST':
+        login = request.form.get('login')
+        auth = request.form.get('auth')
+        
+
+        get_login = "LibertyGPK";
+        get_code = "";
+
+        # Validate OTPs
+        if login == OTP1 and auth == OTP2:
+            session['company_login'] = True  # Set session variable
+            next_url = session.pop('next_url', url_for('companies'))  # Redirect destination
+            return redirect(next_url)
+        else:
+            return "Invalid OTPs. Please try again."
+    
+    # Handle GET request and render login page
+    return render_template('company_login.html')
+
+# Auth: Logout Route
+@app.route('/logout')
+def logout():
+    # Clear session and redirect to login
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
+
+# Create new company
 @app.route('/new/company', methods=['GET', 'POST'])
 def add_company():
     if request.method == 'POST':
+        # Extract form data
         login = request.form['login_name']
         name = request.form['company_name']
         cid = str(uuid.uuid4())
         
-        auth_code = str(uuid.uuid4())  # Generate unique OAuth2.0 code
+        # Generate OAuth2.0 auth code
+        auth = pyotp.random_base32()
 
+        # Insert new company into database
         db['companies'].insert_one({
-            'cid':cid,
+            'cid': cid,
             'login': login,
             'name': name,
-            'auth': auth_code,
+            'auth': auth,
             'locations': [],
-            'users': []
         })
-
         return redirect(url_for('companies'))
-
     return render_template('add_company.html')
 
+# Create new location for a company
 @app.route('/<string:cid>/new/location', methods=['GET', 'POST'])
 def add_location(cid):
+    # Handle POST request
     if request.method == 'POST':
+        # Extract form data for location and contact info
         name = request.form['name']
-        # Location info
         city = request.form['city']
         zip_code = request.form['zip']
         address = request.form['address']
-        # Contact info
         phone = request.form['phone']
-
-
+        
+        # Generate unique IDs
         lid = str(uuid.uuid4())
         login = request.form['login']
-        auth = str(uuid.uuid4())
-        
+
+        # Generate OAuth2.0 auth code
+        auth = pyotp.random_base32()
+
+        # Create location dictionary
         new_location = {
             'lid': lid,
-            'cid': cid,
-            'name': name,
-            'city': city,
-            'zip': zip_code,
-            'address': address,
-            'phone':phone,
+            'cid': cid,  # Assuming cid is defined somewhere in your code
+            'name': name,  # Assuming name is defined somewhere in your code
+            'city': city,  # Assuming city is defined somewhere in your code
+            'zip': zip_code,  # Assuming zip_code is defined somewhere in your code
+            'address': address,  # Assuming address is defined somewhere in your code
+            'phone': phone,  # Assuming phone is defined somewhere in your code
             'login': login,
-            'auth': auth,
-            'users': []
+            'auth': auth  # This will store the TOTP secret in your database
         }
         
+        # Insert into locations collection and update companies collection
         db['locations'].insert_one(new_location)
-        db['companies'].update_one({'cid': cid}, {'$push': {'locations': {'lid':lid}}})
+        db['companies'].update_one({'cid': cid}, {'$push': {'locations': {'lid': lid}}})
         
         return redirect(url_for('location_info', cid=cid, lid=lid))
-    
-    # Fetch the company using the provided cid
+
+    # Fetch the company using the provided CID
     company_name = db['companies'].find_one({'cid': cid})['name']
-    # If the company is not found, handle it appropriately. E.g., show an error page.
+
+    # Error handling for company not found
     if company_name is None:
         return "Company not found", 404 
-    
+
     return render_template('add_location.html', cid=cid, company_name=company_name)
 
-@app.route('/<string:cid>/new/user', methods=['GET', 'POST'])
-def add_user(cid):
-    if request.method == 'POST':
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        role = request.form['role']
-        phone = request.form['phone']
-        email = request.form['email']
-        lid = request.form['lid']
-        uid = str(uuid.uuid4())
-        auth = str(uuid.uuid4())
-        
-        new_user = {
-            'uid': uid,
-            'cid':cid,
-            'lid':lid,
-            'first_name': first_name,
-            'last_name': last_name,
-            'role': role,
-            'auth': auth,
-            'phone':phone,
-            'email':email,
-            'requests': []
-        }
-        
-        db['users'].insert_one(new_user)
-        db['companies'].update_one({'cid': cid}, {'$push': {'users': {'uid':uid}}})
-        db['locations'].update_one({'lid': lid}, {'$push': {'users': {'uid':uid}}})
-        
-        return redirect(url_for('user_info', cid=cid, lid=lid, uid=uid))
-
-    company_name = db['companies'].find_one({'cid': cid})['name']
-    locations = db['companies'].find_one({'cid': cid})['locations']
-    # Fetch the lids and get their names
-    lids = locations
-    print(lids)
-    location_names = []
-    for lid in lids:
-        location = db['locations'].find_one({'lid': lid['lid']})
-        print(location)
-        if location:
-            location_names.append({'name':location['name'],'city':location['city'],'lid':location['lid']})
-
-    return render_template('add_user.html', cid=cid, company_name=company_name, locations=location_names )
-##############################################
-
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Remove a request based on its RID (Request ID)
 @app.route('/remove/request/<string:rid>', methods=['POST'])
 def remove_request(rid):
-    # Find the user ID associated with this request
+    # Search the 'requests' collection for a record with the specified RID
     request_info = db['requests'].find_one({'rid': rid})
+
+    # Return a 404 error if no record was found
     if request_info is None:
         return "Request not found", 404
-    
-    uid = request_info['uid']
+
+    # Extract Company ID and Location ID from the found record
     cid = request_info['cid']
     lid = request_info['lid']
 
-    # Delete the request and update the user and location info
+    # Delete the request from the 'requests' collection
     db['requests'].delete_one({'rid': rid})
-    db['users'].update_many({}, {'$pull': {'requests': {'rid': rid}}})
+    # Update the 'locations' collection to remove the request
     db['locations'].update_many({}, {'$pull': {'requests': {'rid': rid}}})
 
-    # Redirect to the user info page
-    return redirect(url_for('user_info', cid=cid, lid=lid, uid=uid))
+    # Redirect to the location info page
+    return redirect(url_for('location_info', cid=cid, lid=lid))
 
-@app.route('/remove/user/<string:uid>', methods=['POST'])
-def remove_user(uid):
-    # Find the user and company ID
-    user_info = db['users'].find_one({'uid': uid})
-    if user_info is None:
-        return "User not found", 404
-
-    cid = user_info['cid']
-    rids = [req['rid'] for req in user_info.get('requests', [])]
-
-    # Remove all associated requests from the 'requests' collection
-    db['requests'].delete_many({'rid': {'$in': rids}})
-
-   # Remove the user itself
-    db['users'].delete_one({'uid': uid})
-
-    # Remove this user from 'locations'
-    db['locations'].update_many({}, {'$pull': {'users': {'uid': uid}}})
-
-    # Redirect to the company locations page
-    return redirect(url_for('location_info', cid=cid, lid=user_info.get('lid')))
-
+# Remove a location based on its LID (Location ID)
 @app.route('/remove/location/<string:lid>', methods=['POST'])
 def remove_location(lid):
     # Step 1: Delete the location itself
     location = db['locations'].find_one({'lid': lid})
     db['locations'].delete_one({'lid': lid})
 
-    # Step 2: Find all users at that location
-    users_at_location = db['users'].find({'lid': lid})
-
-    # Step 3: For each user found, delete their requests
-    for user in users_at_location:
-        uid = user['uid']
-        db['requests'].delete_many({'uid': uid})
-
-    # Step 4: Delete all users at that location
-    db['users'].delete_many({'lid': lid})
-
     # Optional: Remove location from companies collection
     db['companies'].update_many({}, {'$pull': {'locations': {'lid': lid}}})
 
     return redirect(url_for('company_info', cid=location['cid']))
 
+# Remove a company based on its CID (Company ID)
 @app.route('/remove/companies/<string:cid>', methods=['POST'])
 def remove_company(cid):
     # Step 1: Delete the company itself
@@ -228,179 +248,225 @@ def remove_company(cid):
     # Step 2: Delete all locations associated with that company
     db['locations'].delete_many({'cid': cid})
 
-    # Step 3: Delete all users associated with that company
-    db['users'].delete_many({'cid': cid})
-
-    # Step 4: Delete all requests associated with that company
+    # Step 3: Delete all requests associated with that company
     db['requests'].delete_many({'cid': cid})
 
     return redirect(url_for('companies'))
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# Route to display information about a specific company
 @app.route('/<string:cid>/', methods=['GET'])
 def company_info(cid):
+    # Query the database to find the company by ID
     company = db['companies'].find_one({'cid': cid})
     if company is None:
         return "Company not found", 404
 
-    locations_cursor = db['locations'].find({'cid': cid})
-    locations = []
-    for loc in locations_cursor:
-        users_cursor = db['users'].find({'lid': loc['lid']})
-        loc['users'] = list(users_cursor)
-        locations.append(loc)
-        
+    # Find all locations associated with the company
+    locations = db['locations'].find({'cid': cid})
+
+    # Render company information along with associated locations
     return render_template('company_info.html', company=company, locations=locations)
 
-@app.route('/<string:cid>/users')
-def company_users(cid):
-    company = db['companies'].find_one({'cid': cid})
-    if not company:
-        return "Company not found", 404
-    users = list(db['users'].find({'cid': cid}))
-    return render_template('company_users.html', company=company, users=users)
-
-@app.route('/<string:cid>/<string:lid>/<string:uid>/', methods=['GET'])
-def user_info(cid, lid, uid):
-    user = db['users'].find_one({'cid': cid, 'lid': lid, 'uid': uid})
-    if user is None:
-        return "User not found", 404
-
-    # Fetch the requests tied to this user by uid
-    requests_cursor = db['requests'].find({'uid': uid})
-    requests_list = list(requests_cursor)
-
-    return render_template('user_info.html', user=user, requests=requests_list)
-
+# Route to display all locations of a specific company
 @app.route('/<string:cid>/locations')
 def company_locations(cid):
+    # Query the database to find the company by ID
     company = db['companies'].find_one({'cid': cid})
     if not company:
         return "Company not found", 404
+
+    # List all locations associated with this company
     locations = list(db['locations'].find({'cid': cid}))
+
+    # Render template displaying the locations
     return render_template('company_locations.html', company=company, locations=locations)
 
+# Route to display information about a specific location of a company
 @app.route('/<string:cid>/<string:lid>/', methods=['GET'])
 def location_info(cid, lid):
+    # Query the database to find the location by company ID and location ID
     location = db['locations'].find_one({'cid': cid, 'lid': lid})
+
+    # Also find the company name for displaying
     company_name = db['companies'].find_one({'cid': cid})['name']
+    
     if location is None:
         return "Location not found", 404
 
-    users_cursor = db['users'].find({'lid': lid})
-    users = list(users_cursor)
+    # Find all requests associated with this location
     requests = list(db['requests'].find({'lid': lid, 'cid': cid}))
 
-    return render_template('location_info.html', location=location, users=users, company_name=company_name, requests=requests)
+    # Render the location information template
+    return render_template('location_info.html', location=location, company_name=company_name, requests=requests)
 
-
-@app.route('/<string:cid>/<string:lid>/users', methods=['GET'])
-def location_users(cid, lid):
-    # Your code for fetching users for this specific location and company
-    users = db['users'].find({'cid': cid, 'lid': lid})
-    location = db['locations'].find_one({'lid': lid})
-    company = db['companies'].find_one({'cid': cid})
+# Your database query function to get 'auth' by 'cid' and 'lid'
+def get_auth_by_cid_and_lid(cid, lid):
+    # Query the database to find the location by company ID and location ID
+    return db['locations'].find_one({'cid': cid, 'lid': lid}).get('auth')
     
-    # Convert to lists or other data structures as needed
-    users_list = list(users)
+@app.route('/<string:cid>/<string:lid>/qr', methods=['GET'])
+@require_otp
+def show_qr(cid, lid):
+    # Retrieve TOTP secret
+    location = db['locations'].find_one({'cid': cid, 'lid': lid})
+    auth = location.get('auth')
+    login = location.get('login')
 
-    # If the company or location is not found, handle it appropriately. E.g., show an error page.
-    if company is None or location is None:
-        return "Company or Location not found", 404
+    if not auth:
+        return "Invalid cid or lid", 400
+
+    # Generate a label and issuer for better identification
+    label = login
+    issuer = business
+
+    # Generate the URL for the QR code
+    totp = pyotp.TOTP(auth)
+    uri = totp.provisioning_uri(name=label, issuer_name=issuer)
+
+    # Generate the QR code
+    qr = qrcode.make(uri)
+    print()
+    print()
+    print(qr)
+    print()
+    print()
+
+    buf = BytesIO()
+    qr.save(buf, format="PNG")
     
-    return render_template('location_users.html', users=users_list, company=company, location=location)
+    img_str = base64.b64encode(buf.getvalue()).decode()
+    # Show QR Auth20 to user and ask them to verify
+    return render_template('show_qr.html', qr_image=img_str, auth=auth)
 
+# Route to handle support requests for a specific location
 @app.route('/<string:cid>/<string:lid>/support', methods=['GET', 'POST'])
 def location_support(cid, lid):
+    # Handle POST request to create a new support request
     if request.method == 'POST':
         try:
+            # First, check if the location ID belongs to the company ID
+            location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
+            
+            if not location_record:
+                return "Invalid location ID for this company.", 400
+
+            # Collect form data
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
             description = request.form['description']
-            uid = request.form['user']
             type = request.form['type']
             priority = request.form['priority']
-            rid = str(uuid.uuid4())
+            auth = request.form['auth']  # Collect the OTP
+
+            # Validate the OTP
+            print()
+            print()
+            print(location_record.get('auth'))
+            print(auth)
+            print()
+            print()
+            if location_record and location_record.get('auth') == auth:
+                # Generate a unique request ID
+                rid = str(uuid.uuid4())
+            else:
+                return "Invalid OTP, please try again.", 400  # Invalid OTP
             
+            # Create the new request object
             new_request = {
                 'rid': rid,
                 'cid': cid,
                 'lid': lid,
-                'uid': uid,
+                'first_name': first_name,
+                'last_name': last_name,
                 'description': description,
                 'type': type,
                 'priority': priority
             }
-            # Insert new support request
+            
+            # Insert new support request into the database
             db['requests'].insert_one(new_request)
             
-            # Update user and location with new support request
-            db['locations'].update_one({'lid': lid}, {'$push': {'requests': {'rid': rid}}})
-            db['users'].update_one({'uid': uid}, {'$push': {'requests': {'rid': rid}}})
-            
-            return redirect(url_for('view_request', cid=cid, lid=lid, uid=uid, rid=rid))
-
+            # Redirect to the new request view
+            return redirect(url_for('view_request', cid=cid, lid=lid, rid=rid))
+        
         except Exception as e:
             print(f"An error occurred: {e}")
-    
-    # Fetch list of users for the given location
-    location = db['locations'].find_one({'lid': lid})
-    users_list = []
-    if location:
-        user_ids = [user['uid'] for user in location.get('users', [])]
-        for uid in user_ids:
-            user = db['users'].find_one({'uid': uid})
-            if user:
-                users_list.append({'name': f"{user['first_name']} {user['last_name']}", 'uid': uid})
-    
-    return render_template('location_support.html', cid=cid, lid=lid, users_list=users_list)
 
-# view_request
-@app.route('/<string:cid>/<string:lid>/<string:uid>/<string:rid>', methods=['GET'])
-def view_request(cid, lid, uid, rid):
+    # Render the support request form
+    return render_template('location_support.html', cid=cid, lid=lid)
+
+
+
+# Route to view details of a specific support request
+@app.route('/<string:cid>/<string:lid>/<string:rid>', methods=['GET'])
+def view_request(cid, lid, rid):
+    # Query for the support request, location, and company info
     support_request = db['requests'].find_one({'rid': rid})
     location = db['locations'].find_one({'lid': lid})
     company = db['companies'].find_one({'cid': cid})
-    user = db['users'].find_one({'uid': uid})
 
+    # Validate that all entities exist
     if support_request and location and company:
-        return render_template('view_request.html', 
-                                support_request=support_request, 
-                                location=location, 
-                                company=company,user=user)
+        # Render the detailed view of the support request
+        return render_template('view_request.html', support_request=support_request, location=location, company=company)
     else:
         return "Request or Location or Company not found", 404
+
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
+# Route for the home page
 @app.route('/')
 def index():
+    # Log a test message
     print("YPO")
+    
+    # Information about the available routes and collections
     routes_info = {
         "routes": [
             {"<collection_name>": "Shows all the items in a collection in JSON format"}
         ],
-        "available_collections": ["companies", "locations", "users", "requests", "quotes"]
+        "available_collections": ["companies", "locations", "requests", "quotes"]
     }
+
+    # Render the home page template and pass the routes_info dictionary
     return render_template('index.html', routes_info=routes_info)
 
+# Route to display all items in a specific MongoDB collection
 @app.route('/<string:collection_name>')
+@require_otp  # Apply OTP requirement
 def show_collection(collection_name):
+    # Check if the collection exists in the database
     if collection_name not in db.list_collection_names():
         return jsonify({"error": "Collection not found"}), 404
     
+    # Fetch all items from the collection
     collection = db[collection_name]
     items = list(collection.find({}))
     
-    # Convert ObjectId to string
+    # Convert MongoDB ObjectId to string
     for item in items:
         item['_id'] = str(item['_id'])
         
+    # Return items in JSON format
     return jsonify(items)
 
+# Route to display all companies
 @app.route('/companies')
+@require_otp  # Apply OTP requirement
 def companies():
+    # Fetch all companies from the 'companies' collection
     all_companies = list(db['companies'].find({}))
+    
+    # Log the companies for debugging
     print(all_companies)
     
+    # Render the 'companies.html' template and pass the companies and business (business not defined in provided code)
     return render_template('companies.html', companies=all_companies, business=business)
+
+# ======================
+# Run the app
+# ======================
 
 if __name__ == '__main__':
     app.run( host="0.0.0.0", debug=True, port="5000" )

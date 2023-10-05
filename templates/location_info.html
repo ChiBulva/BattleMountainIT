@@ -7,24 +7,24 @@
     <h1><a href="{{ url_for('company_info', cid=location['cid']) }}">{{ company_name }}</a>: {{ location['name'] }}</h1>
     <h2>Basic Information</h2>
     <ul>
-        <li><strong>LID:</strong> {{ location['lid'] }}</li>
         <li><strong>Address:</strong> {{ location['address'] }}</li>
         <li><strong>City:</strong> {{ location['city'] }}</li>
         <li><strong>ZIP:</strong> {{ location['zip'] }}</li>
     </ul>
     <a href="{{ url_for('location_support', cid=location['cid'], lid=location['lid']) }}" class="button">Support</a>
-    <h2>Users at this Location</h2>
+    <a href="{{ url_for('show_qr', cid=location['cid'], lid=location['lid']) }}" class="button">QR</a>    
+    <!--<h2>Users at this Location</h2>
     <ul>
-        {% for user in users %}
+         {% for user in users %}
             <li>
                 <a href="{{ url_for('user_info', cid=location['cid'], lid=location['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }}</a>
-                <!-- Remove Button -->
+                
                 <form action="{{ url_for('remove_user', uid=user['uid']) }}" method="post" style="display:inline;">
                     <input type="submit" value="Remove">
                 </form>
             </li>
-        {% endfor %}
-    </ul>
+        {% endfor %} 
+    </ul>-->
     <h2>Requests at this Location</h2>
     <ul>
         {% for request in requests %}
@@ -33,8 +33,10 @@
     </ul>
     <p><a href="{{ url_for('company_info', cid=location['cid']) }}">Back to Company Info</a></p>
     
+    <li><strong>LID:</strong> {{ location['lid'] }}</li>
     <form action="{{ url_for('remove_location', lid=location['lid']) }}" method="post">
         <input type="submit" value="Remove Location">
     </form>
+    
 </body>
 </html>

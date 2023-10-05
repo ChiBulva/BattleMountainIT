@@ -14,25 +14,21 @@
     <h2>New Actions</h2>
     <ul>
         <li><a href="{{ url_for('add_location', cid=company['cid']) }}">Add New Location</a></li>
-        <li><a href="{{ url_for('add_user', cid=company['cid']) }}">Add New User</a></li>
+        
     </ul>
 
     <h2>Actions</h2>
     <ul>
-        <li><a href="{{ url_for('company_users', cid=company['cid']) }}">View Users</a></li>
+        
         <li><a href="{{ url_for('company_locations', cid=company['cid']) }}">View Locations</a></li>
     </ul>
 
-    <h3>Locations and Users</h3>
+    <h3>Locations:</h3>
     <ul>
         {% for location in locations %}
             <li>
                 <a href="{{ url_for('location_info', cid=company['cid'], lid=location['lid']) }}">{{ location['name'] }}</a>
-                <ul>
-                    {% for user in location['users'] %}
-                        <li><a href="{{ url_for('user_info', cid=company['cid'], lid=location['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }}</a></li>
-                    {% endfor %}
-                </ul>
+
             </li>
         {% endfor %}
     </ul>

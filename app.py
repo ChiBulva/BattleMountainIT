@@ -2,7 +2,7 @@
 # Imported External Modules
 # ========================
 
-from flask import Flask, jsonify, render_template, request, redirect, url_for, session
+from flask import Flask, jsonify, render_template, request, redirect, url_for, session, abort
 from pymongo import MongoClient  # MongoDB Driver
 from datetime import timedelta  # For session timeout
 import uuid  # For generating OAuth2.0 code
@@ -339,63 +339,65 @@ def show_qr(cid, lid):
     # Show QR Auth20 to user and ask them to verify
     return render_template('show_qr.html', qr_image=img_str, auth=auth)
 
-# Route to handle support requests for a specific location
+
 @app.route('/<string:cid>/<string:lid>/support', methods=['GET', 'POST'])
 def location_support(cid, lid):
     # Handle POST request to create a new support request
     if request.method == 'POST':
-        try:
-            # First, check if the location ID belongs to the company ID
-            location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
-            
-            if not location_record:
-                return "Invalid location ID for this company.", 400
-
-            # Collect form data
-            first_name = request.form['first_name']
-            last_name = request.form['last_name']
-            description = request.form['description']
-            type = request.form['type']
-            priority = request.form['priority']
-            auth = request.form['auth']  # Collect the OTP
-
-            # Validate the OTP
-            print()
-            print()
-            print(location_record.get('auth'))
-            print(auth)
-            print()
-            print()
-            if location_record and location_record.get('auth') == auth:
-                # Generate a unique request ID
-                rid = str(uuid.uuid4())
-            else:
-                return "Invalid OTP, please try again.", 400  # Invalid OTP
-            
-            # Create the new request object
-            new_request = {
-                'rid': rid,
-                'cid': cid,
-                'lid': lid,
-                'first_name': first_name,
-                'last_name': last_name,
-                'description': description,
-                'type': type,
-                'priority': priority
-            }
-            
-            # Insert new support request into the database
-            db['requests'].insert_one(new_request)
-            
-            # Redirect to the new request view
-            return redirect(url_for('view_request', cid=cid, lid=lid, rid=rid))
+        #try:
+        # First, check if the location ID belongs to the company ID
+        location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
         
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        if not location_record:
+            abort(404, description="Invalid location ID for this company.")
+        # Collect form data
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        description = request.form['description']
+        type = request.form['type']
+        priority = request.form['priority']
+        auth = request.form['auth']  # Collect the OTP
+        print("auth")
+        # Convert the OTP secret to a 6-digit code
+        totp = pyotp.TOTP(location_record.get('auth'))
+        six_digit_otp = totp.now()
 
-    # Render the support request form
-    return render_template('location_support.html', cid=cid, lid=lid)
+        # Debug: Print the six_digit_otp and location_record.get('auth')
+        print(f"Debug: six_digit_otp = {six_digit_otp}")
+        print(f"Debug: location_record.get('auth') = {location_record.get('auth')}")
 
+        if location_record and auth == six_digit_otp:
+            # Generate a unique request ID
+            rid = str(uuid.uuid4())
+        else:
+            return "Invalid OTP, please try again.", 400  # Invalid OTP
+        
+        # Create the new request object
+        new_request = {
+            'rid': rid,
+            'cid': cid,
+            'lid': lid,
+            'first_name': first_name,
+            'last_name': last_name,
+            'description': description,
+            'type': type,
+            'priority': priority
+        }
+        
+        # Insert new support request into the database
+        db['requests'].insert_one(new_request)
+        
+        # Redirect to the new request view
+        return redirect(url_for('view_request', cid=cid, lid=lid, rid=rid))
+    
+        #except Exception as e:
+        print(f"An error occurred: {e}")
+
+    else:  # GET request
+        location_record = db['locations'].find_one({'lid': lid, 'cid': cid})
+        if not location_record:
+            abort(404, description="Invalid location ID for this company.")
+        return render_template('location_support.html', cid=cid, lid=lid)
 
 
 # Route to view details of a specific support request

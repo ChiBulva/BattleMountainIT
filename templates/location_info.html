@@ -1,42 +1,80 @@
+
+
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/bmit-styles-lid_info.css') }}">
+
     <title>Location Info: Back to Company Info</title>
+    
 </head>
 <body>
-    <h1><a href="{{ url_for('company_info', cid=location['cid']) }}">{{ company_name }}</a>: {{ location['name'] }}</h1>
-    <h2>Basic Information</h2>
-    <ul>
-        <li><strong>Address:</strong> {{ location['address'] }}</li>
-        <li><strong>City:</strong> {{ location['city'] }}</li>
-        <li><strong>ZIP:</strong> {{ location['zip'] }}</li>
-    </ul>
-    <a href="{{ url_for('location_support', cid=location['cid'], lid=location['lid']) }}" class="button">Support</a>
-    <a href="{{ url_for('show_qr', cid=location['cid'], lid=location['lid']) }}" class="button">QR</a>    
-    <!--<h2>Users at this Location</h2>
-    <ul>
-         {% for user in users %}
-            <li>
-                <a href="{{ url_for('user_info', cid=location['cid'], lid=location['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }}</a>
-                
-                <form action="{{ url_for('remove_user', uid=user['uid']) }}" method="post" style="display:inline;">
-                    <input type="submit" value="Remove">
-                </form>
-            </li>
-        {% endfor %} 
-    </ul>-->
-    <h2>Requests at this Location</h2>
-    <ul>
-        {% for request in requests %}
-            <li><a href="{{ url_for('view_request', cid=request['cid'], lid=request['lid'], uid=request['uid'], rid=request['rid']) }}">{{ request['description'] }}</a></li>
-        {% endfor %}
-    </ul>
-    <p><a href="{{ url_for('company_info', cid=location['cid']) }}">Back to Company Info</a></p>
-    
-    <li><strong>LID:</strong> {{ location['lid'] }}</li>
-    <form action="{{ url_for('remove_location', lid=location['lid']) }}" method="post">
-        <input type="submit" value="Remove Location">
-    </form>
-    
+
+<div id="sidebar">
+  <ul>
+    <li><a href="#basic-info">Basic Information</a></li>
+    <li><a href="#users">Users</a></li>
+    <li><a href="#requests">Requests</a></li>
+  </ul>
+</div>
+
+<div id="form-container">
+    <div id="form3D">
+        <!-- GIF Container -->
+        <div class="gif-container">
+            <div class="logo-text">Battle Mountain</div>
+            <div class="logo-text">Support</div>
+            <img class="logo" src="{{ url_for('static', filename='Logo.gif') }}" alt="Your GIF">
+        </div>
+        <h1><a href="{{ url_for('company_info', cid=location['cid']) }}">{{ company_name }}</a>: {{ location['name'] }}</h1>
+        <h2>Basic Information</h2>
+        <ul>
+            <li><strong>Address:</strong> {{ location['address'] }}</li>
+            <li><strong>City:</strong> {{ location['city'] }}</li>
+            <li><strong>ZIP:</strong> {{ location['zip'] }}</li>
+        </ul>
+        <a href="{{ url_for('location_support', cid=location['cid'], lid=location['lid']) }}" class="button">Support</a>
+        <a href="{{ url_for('show_qr', cid=location['cid'], lid=location['lid']) }}" class="button">QR</a>    
+        <!--<h2>Users at this Location</h2>
+        <ul>
+            {% for user in users %}
+                <li>
+                    <a href="{{ url_for('user_info', cid=location['cid'], lid=location['lid'], uid=user['uid']) }}">{{ user['first_name'] }} {{ user['last_name'] }}</a>
+                    
+                    <form action="{{ url_for('remove_user', uid=user['uid']) }}" method="post" style="display:inline;">
+                        <input type="submit" value="Remove">
+                    </form>
+                </li>
+            {% endfor %} 
+        </ul>-->
+        <h2>Requests at this Location</h2>
+        <ul>
+            {% for request in requests %}
+                <li><a href="{{ url_for('view_request', cid=request['cid'], lid=request['lid'], uid=request['uid'], rid=request['rid']) }}">{{ request['description'] }}</a></li>
+            {% endfor %}
+        </ul>
+        <p><a href="{{ url_for('company_info', cid=location['cid']) }}">Back to Company Info</a></p>
+        
+        <li><strong>LID:</strong> {{ location['lid'] }}</li>
+        <form action="{{ url_for('remove_location', lid=location['lid']) }}" method="post">
+            <input type="submit" value="Remove Location">
+        </form>
+        
+    </div>
+</div>
+
+<script>
+    // Enable 3D effect only on non-mobile devices
+    if (window.innerWidth > 768) {
+      let Rot = 1
+      document.addEventListener('mousemove', function(event) {
+        const x = (event.clientX / window.innerWidth - 0.5) * 2;
+        const y = (event.clientY / window.innerHeight - 0.5) * 2;
+        const form3D = document.getElementById('form3D');
+        form3D.style.transform = `rotateX(${y * -Rot}deg) rotateY(${x * Rot}deg)`;
+      });
+    }
+  </script>
 </body>
 </html>
